@@ -13,14 +13,31 @@ function Icon({ name, size = 16 }) {
     </svg>
   )
 }
+function PerfilSemLogin() {
+  return (
+    <main className="home perfil-sem-login">
+      <h1>Bem-vindo ao RadarTech</h1>
+      <p>Faça login para acessar seu perfil e recursos personalizados.</p>
+      <button type="button" onClick={() => { /* Lógica de login */ }}>Login</button>
+      <p>Caso não tenha uma conta, cadastre-se.</p>
+       <button type="button" onClick={() => { /* Lógica de login */ }}>Cadastrar</button>
+      <a href="/">Voltar para a tela inicial</a>
+    </main>
+  )
+}
 
 export default function App() {
+  if (window.location.pathname === '/perfil') {
+    return <PerfilSemLogin />
+  }
+
   return (
     <main className="home" aria-labelledby="home-title">
       <h1 id="home-title">Tela inicio</h1>
       <div className="screen">
         <header className="toolbar">
-          <span className="avatar" aria-hidden="true" />
+          <a className="desktop-brand" href="/">RadarTech</a>
+          <a className="avatar" href="/perfil" aria-label="Abrir perfil" />
           <div className="search">
             <Icon name="search" />
             <input type="search" aria-label="Buscar" placeholder="Search" />
