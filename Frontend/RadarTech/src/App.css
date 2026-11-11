@@ -1,0 +1,225 @@
+.home {
+  width: min(52rem, calc(100% - 2rem));
+  margin: clamp(1rem, 7vh, 3.5rem) auto 2rem;
+}
+
+.home h1 {
+  margin: 0 0 1.1392vh;
+  color: #888;
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.screen {
+  background: linear-gradient(#d8d8d8, #fff 28%);
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
+  align-items: center;
+  gap: clamp(0.5rem, 2vw, 1rem);
+  padding: 1rem clamp(0.75rem, 4vw, 2rem) 0;
+}
+
+.avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: #909090;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 0.6329vh;
+  min-height: 2.75rem;
+  min-width: 0;
+  padding: 0 0.8861vh;
+  border-radius: 2.5316vh;
+  background: #c1c1c1;
+  color: #303030;
+}
+
+.search svg { flex-shrink: 0; }
+
+.search input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 1rem;
+}
+
+.search input::placeholder { color: #3b3b3b; }
+
+.search button, .notifications {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.notifications { min-height: 2.75rem; color: #202020; }
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1rem, 4vw, 2rem);
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.card-wide {
+  grid-column: 1 / -1;
+  margin: 0 0.6329vh 0.8861vh;
+}
+
+.card-preview {
+  height: clamp(6.875rem, 28vw, 14rem);
+  border: 0.1266vh solid #d7d7d7;
+  border-top-color: #fff;
+  border-radius: 3.038vh;
+  background: #f7f7f7;
+  box-shadow: 0 1.0127vh 3.1646vh #0003;
+}
+
+.play {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.3797vh;
+  min-height: 2.75rem;
+  margin-top: 0.8861vh;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: 1.519vh;
+  background: #008eff;
+  color: #fff;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.play span {
+  width: 0;
+  height: 0;
+  border-block: 0.5063vh solid transparent;
+  border-left: 0.8861vh solid currentColor;
+}
+
+.card:first-child .play, .card:nth-child(4) .play { margin-left: 1.2658vh; }
+
+.screen-footer {
+  height: 5.9494vh;
+  background: #d8d8d8;
+}
+
+.perfil-sem-login {
+  padding: 3.038vh;
+  border-radius: 3.038vh;
+  background: #f7f7f7;
+  color: #202020;
+}
+
+.perfil-sem-login h1 {
+  color: inherit;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.perfil-sem-login a {
+  display: block;
+  margin-top: 2.0253vh;
+  color: #005fb8;
+}
+
+.desktop-brand { display: none; }
+
+@media (min-width: 60rem) {
+  body { background: #f4f5f7; }
+
+  .home:not(.perfil-sem-login) {
+    display: grid;
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    grid-template-rows: auto auto 1fr auto;
+  }
+
+  .home:not(.perfil-sem-login) h1 {
+    grid-row: 2;
+    width: min(80rem, calc(100% - 6rem));
+    margin: 2.5rem auto 1.25rem;
+    color: #202020;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .screen { display: contents; }
+
+  .toolbar {
+    grid-row: 1;
+    grid-template-columns: 1fr minmax(14rem, 30rem) 1fr 2.75rem;
+    grid-template-areas: "brand search bell avatar";
+    gap: 1rem;
+    padding: 1rem max(3rem, calc((100% - 80rem) / 2));
+    background: #fff;
+    border-bottom: 0.0625rem solid #dfe2e7;
+  }
+
+  .desktop-brand {
+    display: inline-block;
+    grid-area: brand;
+    justify-self: start;
+    color: #202020;
+    font-size: 1.375rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .avatar { grid-area: avatar; }
+  .notifications { grid-area: bell; justify-self: end; width: 2.75rem; }
+  .search { grid-area: search; background: #edf0f3; padding-inline: 1rem; }
+
+  .cards {
+    grid-row: 3;
+    width: min(80rem, calc(100% - 6rem));
+    margin: 0 auto;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-content: start;
+    gap: 1.5rem;
+    padding: 0 0 2.5rem;
+  }
+
+  .card {
+    padding: 0.75rem;
+    border: 0.0625rem solid #dfe2e7;
+    border-radius: 1rem;
+    background: #fff;
+  }
+
+  .card-wide, .card:nth-child(n + 4) {
+    grid-column: span 2;
+    margin: 0;
+  }
+
+  .card-preview {
+    height: 10rem;
+    border: 0;
+    border-radius: 0.625rem;
+    background: #edf0f3;
+    box-shadow: none;
+  }
+
+  .cards .play { margin: 0.75rem 0 0; }
+
+  .screen-footer {
+    grid-row: 4;
+    height: 3rem;
+    background: #fff;
+    border-top: 0.0625rem solid #dfe2e7;
+  }
+}

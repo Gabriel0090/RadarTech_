@@ -1,0 +1,55 @@
+/* Estilos das telas de Login e Cadastro */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+  background: #f5f6f8;
+  color: #202020;
+}
+.auth-brand {
+  margin-bottom: 1.5rem;
+  color: #202020;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  text-decoration: none;
+}
+.auth-panel {
+  width: min(100%, 26rem);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  border: 1px solid #e4e6eb;
+  border-radius: .75rem;
+  background: #fff;
+  box-shadow: 0 .75rem 2.5rem #17203312;
+}
+.auth-panel h1 { margin: 0; color: #202020; font-size: 1.65rem; font-weight: 700; }
+.auth-description { margin: .5rem 0 1.75rem; color: #737780; font-size: .925rem; }
+.auth-panel form { display: flex; flex-direction: column; }
+.auth-panel label { margin: 0 0 .45rem; color: #292d34; font-size: .9rem; font-weight: 600; }
+.auth-panel input {
+  width: 100%; min-height: 2.9rem; margin-bottom: 1.2rem; padding: .75rem .85rem;
+  border: 1px solid #d9dce2; border-radius: .35rem; background: #fff; color: #202020; font-size: .95rem;
+}
+.auth-panel input::placeholder { color: #a0a4ad; }
+.auth-panel input:focus { border-color: #333; outline: 2px solid #3332; }
+.auth-submit {
+  min-height: 2.9rem; margin-top: .35rem; border: 0; border-radius: .35rem;
+  background: #202020; color: #fff; font-size: .95rem; font-weight: 600; cursor: pointer;
+  transition: background 160ms ease;
+}
+.auth-submit:hover { background: #414141; }
+.forgot-link { display: inline-block; margin-top: 1rem; color: #555b65; font-size: .85rem; text-decoration: underline; }
+.auth-switch { margin: 1.6rem 0 0; color: #686d76; font-size: .875rem; text-align: center; }
+.auth-switch a { color: #202020; font-weight: 700; }
+.auth-message { margin: 1rem 0 0; padding: .75rem; border-radius: .35rem; background: #f0f2f4; color: #3e4651; font-size: .85rem; line-height: 1.45; }
+.profile-button {
+  display: block; width: fit-content; margin-top: 1rem; padding: .7rem 1.25rem;
+  border-radius: .4rem; background: #202020; color: white !important; text-decoration: none;
+}
+@media (max-width: 30rem) {
+  .auth-panel { padding: 1.35rem; }
+  .auth-panel h1 { font-size: 1.45rem; }
+}

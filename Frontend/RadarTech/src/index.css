@@ -1,0 +1,14 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #1e1e1e;
+  font-family: Arial, sans-serif;
+}
+
+button, input { font: inherit; }
+
+button:focus-visible, input:focus-visible {
+  outline: 0.2532vh solid #005fb8;
+  outline-offset: 0.2532vh;
+}
