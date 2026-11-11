@@ -8,8 +8,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
-from app.database import get_db
-from app.models.models import Usuario
+from app.db.session import get_session as get_db
+from app.models import Usuario
 
 bearer_scheme = HTTPBearer(auto_error=False)
 settings = get_settings()

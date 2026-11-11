@@ -1,0 +1,28 @@
+name: radartech-test
+services:
+  db-test:
+    image: postgres:15.18-bookworm@sha256:e8db9bd3e9e1751eb639fb17be53cc6d1b62a322adf75b99e791767a7a16ce69
+    environment:
+      POSTGRES_DB: radartech_test
+      POSTGRES_USER: radartech_test
+      POSTGRES_PASSWORD: radartech_test_local
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U radartech_test -d radartech_test']
+      interval: 2s
+      timeout: 3s
+      retries: 20
+  backend-test:
+    build: ./backend
+    environment:
+      POSTGRES_DB: radartech_test
+      POSTGRES_USER: radartech_test
+      POSTGRES_PASSWORD: radartech_test_local
+      DB_HOST: db-test
+      DB_PORT: 5432
+      RADARTECH_TEST: '1'
+    command: [python, -m, tests.run_integration]
+    depends_on:
+      db-test:
+        condition: service_healthy
