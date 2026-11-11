@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import './Auth.css'
 
 function Icon({ name, size = 16 }) {
   const paths = {
