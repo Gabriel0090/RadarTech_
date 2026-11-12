@@ -1,4 +1,7 @@
+import { useEffect, useState } from 'react'
 import './App.css'
+import './Auth.css'
+import { getCurrentUser, loginUser, logoutUser, registerUser } from './services/auth'
 
 function Icon({ name, size = 16 }) {
   const paths = {
@@ -13,25 +16,54 @@ function Icon({ name, size = 16 }) {
     </svg>
   )
 }
-
-
 function PerfilSemLogin() {
+  const [user, setUser] = useState(null)
+  const [message, setMessage] = useState('Carregando perfil...')
+
+  useEffect(() => {
+    let active = true
+    getCurrentUser()
+      .then((data) => { if (active) { setUser(data); setMessage('') } })
+      .catch((error) => {
+        logoutUser()
+        if (active) setMessage(error.message)
+      })
+    return () => { active = false }
+  }, [])
+
+  function handleLogout() {
+    logoutUser()
+    window.location.assign('/login')
+  }
+
+  if (!user) {
+    return (
+      <main className="home perfil-sem-login">
+        <h1>Perfil</h1>
+        <p>{message}</p>
+        <a className="profile-button" href="/login">Login</a>
+        <a href="/">Voltar para a tela inicial</a>
+      </main>
+    )
+  }
+
   return (
     <main className="home perfil-sem-login">
-      <h1>Bem-vindo ao RadarTech</h1>
-      <p>Faça login para acessar seu perfil e recursos personalizados.</p>
-      <button type="button" onClick={() => { /* Lógica de login */ }}>Login</button>
-      <p>Caso não tenha uma conta, cadastre-se.</p>
-       <button type="button" onClick={() => { /* Lógica de login */ }}>Cadastrar</button>
+      <h1>Olá, {user.nome}!</h1>
+      <p>{user.email}</p>
+      <p>Perfil: {user.perfil}</p>
+      <button className="profile-button" type="button" onClick={handleLogout}>Sair</button>
       <a href="/">Voltar para a tela inicial</a>
     </main>
   )
 }
 
 export default function App() {
-  if (window.location.pathname === '/perfil') {
-    return <PerfilSemLogin />
-  }
+  const path = window.location.pathname
+
+  if (path === '/perfil') return <PerfilSemLogin />
+  if (path === '/login') return <Login />
+  if (path === '/cadastro') return <Cadastro />
 
   return (
     <main className="home" aria-labelledby="home-title">
