@@ -13,6 +13,8 @@ function Icon({ name, size = 16 }) {
     </svg>
   )
 }
+
+
 function PerfilSemLogin() {
   return (
     <main className="home perfil-sem-login">
