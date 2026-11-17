@@ -82,7 +82,7 @@ class EventoCreate(BaseModel):
     data_fim: datetime | None = None
     prazo_inscricao: datetime | None = None
     url_inscricao: str | None = None
-    url_imagem: str | None = None
+    # url_imagem: str | None = None
     contato_sugestao: str | None = Field(default=None, max_length=254)
     assunto_ids: list[int] = Field(default_factory=list)
 
@@ -106,7 +106,7 @@ class EventoResponse(BaseModel):
     data_fim: datetime | None
     prazo_inscricao: datetime | None
     url_inscricao: str | None
-    url_imagem: str | None
+    # url_imagem: str | None
     origem: str | None
     fonte_externa: str | None
     id_externo: str | None
