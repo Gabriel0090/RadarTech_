@@ -29,12 +29,12 @@
 .auth-description { margin: .5rem 0 1.75rem; color: #737780; font-size: .925rem; }
 .auth-panel form { display: flex; flex-direction: column; }
 .auth-panel label { margin: 0 0 .45rem; color: #292d34; font-size: .9rem; font-weight: 600; }
-.auth-panel input {
+.auth-panel :is(input, textarea) {
   width: 100%; min-height: 2.9rem; margin-bottom: 1.2rem; padding: .75rem .85rem;
   border: 1px solid #d9dce2; border-radius: .35rem; background: #fff; color: #202020; font-size: .95rem;
 }
 .auth-panel input::placeholder { color: #a0a4ad; }
-.auth-panel input:focus { border-color: #333; outline: 2px solid #3332; }
+.auth-panel :is(input, textarea):focus { border-color: #333; outline: 2px solid #3332; }
 .auth-submit {
   min-height: 2.9rem; margin-top: .35rem; border: 0; border-radius: .35rem;
   background: #202020; color: #fff; font-size: .95rem; font-weight: 600; cursor: pointer;
@@ -53,3 +53,4 @@
   .auth-panel { padding: 1.35rem; }
   .auth-panel h1 { font-size: 1.45rem; }
 }
+.auth-panel textarea { resize: vertical; font: inherit; }
