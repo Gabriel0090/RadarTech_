@@ -218,3 +218,39 @@ async def test_profile_lists_only_own_suggestions_and_updates_supported_fields(d
         assert profile_response.json()["cidade"] == "Recife, PE"
     finally:
         app.dependency_overrides.clear()
+
+async def test_registration_login_and_suggestion_round_trip(db_session):
+    async def isolated_session():
+        yield db_session
+
+    app.dependency_overrides[app_get_db] = isolated_session
+    app.dependency_overrides[get_session] = isolated_session
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            registered = await client.post("/api/v1/auth/register", json={
+                "nome": "Pessoa Teste", "email": "fluxo@example.com", "senha": "senha-segura-123",
+                "telefone": "11999999999", "cidade": "Recife",
+            })
+            assert registered.status_code == 201, registered.text
+            assert registered.json()["cidade"] == "Recife"
+            login = await client.post("/api/v1/auth/login", json={"email": "fluxo@example.com", "senha": "senha-segura-123"})
+            assert login.status_code == 200, login.text
+            headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+            submitted = await client.post("/api/v1/events/suggestions", headers=headers, json={
+                "titulo": "Oficina de teste", "tipo": "Workshop", "modalidade": "Online",
+                "data_inicio": "2027-03-15T18:00:00Z", "preco": None,
+                "url_inscricao": "https://example.com/inscricao", "url_imagem": "https://example.com/banner.png",
+                "contato_sugestao": "contato@example.com", "instituicao": "Comunidade",
+            })
+            assert submitted.status_code == 201, submitted.text
+            item = submitted.json()
+            assert item["status_revisao"] == "pendente"
+            assert item["url_imagem"] == "https://example.com/banner.png"
+            assert item["contato_sugestao"] == "contato@example.com"
+            assert item["preco"] is None
+            mine = await client.get("/api/v1/me/event-suggestions", headers=headers)
+            assert any(event["id_evento"] == item["id_evento"] for event in mine.json())
+            public = await client.get("/api/v1/events")
+            assert all(event["id_evento"] != item["id_evento"] for event in public.json())
+    finally:
+        app.dependency_overrides.clear()

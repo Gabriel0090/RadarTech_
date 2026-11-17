@@ -17,7 +17,7 @@ if config.config_file_name is not None:
 # A URL real vem do ambiente/.env, não fica gravada em alembic.ini.
 config.set_main_option(
     "sqlalchemy.url",
-    get_settings().database_url.replace("%", "%%"),
+    get_settings().database_url.render_as_string(hide_password=False).replace("%", "%%"),
 )
 target_metadata = Base.metadata
 

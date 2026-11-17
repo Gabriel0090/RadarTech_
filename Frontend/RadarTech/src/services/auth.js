@@ -2,10 +2,10 @@ import { request } from './api'
 
 const TOKEN_KEY = 'radartech_access_token'
 
-export function registerUser({ nome, email, senha }) {
+export function registerUser({ nome, email, senha, telefone, cidade }) {
   return request('/api/v1/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ nome, email, senha }),
+    body: JSON.stringify({ nome, email, senha, telefone, cidade }),
   })
 }
 

@@ -3,6 +3,7 @@ from functools import lru_cache
 from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
+from sqlalchemy.engine import make_url
 
 
 class Settings(BaseSettings):
@@ -10,12 +11,13 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
+        arbitrary_types_allowed=True,
     )
 
     app_name: str = Field(default="RadarTech API", min_length=1)
 
     # Para execução local, pode vir diretamente do DATABASE_URL no .env.
-    database_url: str | None = None
+    database_url: str | URL | None = Field(default=None, repr=False)
 
     # Para Docker Compose, a URL é montada com estas variáveis.
     postgres_db: str | None = None
@@ -35,6 +37,7 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def configurar_database_url(self):
         if self.database_url:
+            self.database_url = make_url(self.database_url)
             return self
 
         if not all((self.postgres_db, self.postgres_user, self.postgres_password)):
@@ -49,7 +52,7 @@ class Settings(BaseSettings):
             host=self.db_host,
             port=self.db_port,
             database=self.postgres_db,
-        ).render_as_string(hide_password=False)
+        )
 
         return self
 

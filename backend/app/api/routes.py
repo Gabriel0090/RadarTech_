@@ -218,14 +218,14 @@ async def sugerir_oportunidade(
             raise HTTPException(status_code=422, detail="Um ou mais assuntos não existem")
 
     evento = Evento(
-        **dados.model_dump(exclude={"assunto_ids"}),
-        contato_sugestao=usuario.email,
+        **dados.model_dump(exclude={"assunto_ids", "contato_sugestao"}),
+        contato_sugestao=dados.contato_sugestao or usuario.email,
         id_sugerido_por=usuario.id_user,
         assuntos=assuntos,
     )
     session.add(evento)
     await session.commit()
-    await session.refresh(evento)
+    await session.refresh(evento, attribute_names=["assuntos"])
     return evento_para_resposta(evento)
 
 

@@ -89,6 +89,7 @@ class Evento(Base):
     data_fim: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     prazo_inscricao: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     url_inscricao: Mapped[str | None] = mapped_column(Text)
+    url_imagem: Mapped[str | None] = mapped_column(Text)
     origem: Mapped[str | None] = mapped_column(String(30))
     fonte_externa: Mapped[str | None] = mapped_column(String(100))
     id_externo: Mapped[str | None] = mapped_column(String(200))

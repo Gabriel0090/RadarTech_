@@ -6,91 +6,52 @@ import { EventDetails } from './Events'
 import Home from './Home'
 import OpportunitySuggestion from './OpportunitySuggestion'
 import Profile from './Profile'
+import Logo from './Logo'
 
-function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [message, setMessage] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  async function handleSubmit(event) {
-    event.preventDefault()
-    setMessage('')
-    setIsSubmitting(true)
-    try {
-      await loginUser({ email, senha: password })
-      window.location.assign(new URLSearchParams(window.location.search).get('next') === '/oportunidades/nova' ? '/oportunidades/nova' : '/perfil')
-    } catch (error) {
-      setMessage(error.message)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  return (
-    <main className="auth-page">
-      <a className="auth-brand" href="/">RadarTech</a>
-      <section className="auth-panel" aria-labelledby="login-title">
-        <h1 id="login-title">Login</h1>
-        <p className="auth-description">Entre na sua conta para continuar.</p>
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="login-email">E-mail</label>
-          <input id="login-email" type="email" placeholder="seuemail@exemplo.com" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-          <label htmlFor="login-password">Senha</label>
-          <input id="login-password" type="password" placeholder="Digite sua senha" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
-          <button className="auth-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Entrando...' : 'Entrar'}</button>
-        </form>
-        {message && <p className="auth-message" role="alert">{message}</p>}
-        <p className="auth-switch">Ainda não tem conta? <a href="/cadastro">Cadastre-se</a></p>
-      </section>
-    </main>
-  )
-}
-
-function Cadastro() {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+function Auth({ signup = false }) {
+  const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [created, setCreated] = useState(false)
+  const next = new URLSearchParams(window.location.search).get('next') === '/oportunidades/nova' ? '?next=%2Foportunidades%2Fnova' : ''
 
   async function handleSubmit(event) {
     event.preventDefault()
+    const form = new FormData(event.currentTarget)
     setMessage('')
     setIsSubmitting(true)
     try {
-      await registerUser({ nome: name, email, senha: password })
-      setCreated(true)
-      setMessage('Conta criada com sucesso! Agora você já pode fazer login.')
-    } catch (error) {
-      setMessage(error.message)
-    } finally {
-      setIsSubmitting(false)
-    }
+      if (signup) {
+        await registerUser({ nome: form.get('nome').trim(), email: form.get('email'), senha: form.get('senha'), telefone: form.get('telefone').trim() || null, cidade: form.get('cidade').trim() || null })
+        setCreated(true)
+        setMessage('Conta criada com sucesso! Entre para continuar.')
+      } else {
+        await loginUser({ email: form.get('email'), senha: form.get('senha') })
+        window.location.assign(next ? '/oportunidades/nova' : '/perfil')
+      }
+    } catch (error) { setMessage(error.message) } finally { setIsSubmitting(false) }
   }
 
-  return (
-    <main className="auth-page">
-      <a className="auth-brand" href="/">RadarTech</a>
-      <section className="auth-panel signup-panel" aria-labelledby="signup-title">
-        <h1 id="signup-title">Cadastrar</h1>
-        <p className="auth-description">Crie sua conta no RadarTech.</p>
+  return <main className="auth-page">
+    <aside className="auth-identity"><Logo />{signup}</aside>
+    <header className="auth-mobile-header"><Logo /><a href="/">← Voltar</a></header>
+    <section className="auth-content">
+      <a className="auth-back" href="/">← Voltar para oportunidades</a>
+      <div className="auth-panel">
+        <h1>{signup ? 'Criar nova conta' : 'Bem-vindo(a) de volta'}</h1>
+        <p className="auth-description">{signup ? 'Preencha seus dados básicos para começar.' : 'Acesse sua conta para sugerir oportunidades, salvar favoritos e interagir.'}</p>
+        <nav className="auth-tabs" aria-label="Autenticação"><a className={!signup ? 'active' : ''} href={'/login' + next}>Entrar</a><a className={signup ? 'active' : ''} href={'/cadastro' + next}>Criar conta</a></nav>
         <form onSubmit={handleSubmit}>
-          <label htmlFor="signup-name">Nome</label>
-          <input id="signup-name" type="text" placeholder="Seu nome completo" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} maxLength={120} required disabled={created} />
-          <label htmlFor="signup-email">E-mail</label>
-          <input id="signup-email" type="email" placeholder="seuemail@exemplo.com" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} maxLength={254} required disabled={created} />
-          <label htmlFor="signup-password">Senha</label>
-          <input id="signup-password" type="password" placeholder="Crie uma senha (mínimo 8 caracteres)" autoComplete="new-password" minLength={8} maxLength={72} value={password} onChange={(event) => setPassword(event.target.value)} required disabled={created} />
-          <button className="auth-submit" type="submit" disabled={isSubmitting || created}>{isSubmitting ? 'Criando conta...' : 'Criar conta'}</button>
+          {signup && <label>Nome completo <b>*</b><input name="nome" autoComplete="name" placeholder="Ex.: Mariana Silva" maxLength={120} required disabled={created} /></label>}
+          <label>E-mail <b>*</b><input name="email" type="email" autoComplete="email" placeholder="seuemail@exemplo.com.br" maxLength={254} required disabled={created} /></label>
+          <label>Senha <b>*</b>{!signup && <button className="forgot-password" type="button" onClick={() => setMessage('A recuperação de senha ainda não está disponível.')}>Esqueci minha senha</button>}<span className="password-field"><input name="senha" type={showPassword ? 'text' : 'password'} autoComplete={signup ? 'new-password' : 'current-password'} placeholder={signup ? 'Mínimo de 8 caracteres' : 'Digite sua senha'} minLength={signup ? 8 : undefined} maxLength={72} required disabled={created} /><button type="button" onClick={() => setShowPassword(!showPassword)}>{showPassword ? 'Ocultar' : 'Mostrar'}</button></span></label>
+          {signup && <div className="auth-row"><label>Telefone (opcional)<input name="telefone" type="tel" autoComplete="tel" placeholder="(51) 99999-0000" maxLength={30} disabled={created} /></label><label>Cidade (opcional)<input name="cidade" autoComplete="address-level2" placeholder="Ex.: Porto Alegre" maxLength={120} disabled={created} /></label></div>}
+          {message && <p className="auth-message" role={created ? 'status' : 'alert'}>{message}</p>}
+          {created ? <a className="auth-submit auth-submit-link" href={'/login' + next}>Ir para o login</a> : <button className="auth-submit" disabled={isSubmitting}>{isSubmitting ? 'Aguarde…' : signup ? 'Criar conta' : 'Entrar'}</button>}
         </form>
-        {message && <p className="auth-message" role={created ? 'status' : 'alert'}>{message}</p>}
-        {created && <p className="auth-switch"><a href="/login">Ir para o login</a></p>}
-        <p className="auth-switch">Já tem uma conta? <a href="/login">Fazer login</a></p>
-      </section>
-    </main>
-  )
+      </div>
+    </section>
+  </main>
 }
 
 export default function App() {
@@ -100,8 +61,8 @@ export default function App() {
   if (eventRoute) return <EventDetails eventId={eventRoute[1]} />
   if (path === '/oportunidades/nova') return <OpportunitySuggestion />
   if (path === '/perfil') return <Profile />
-  if (path === '/login') return <Login />
-  if (path === '/cadastro') return <Cadastro />
+  if (path === '/login') return <Auth />
+  if (path === '/cadastro') return <Auth signup />
 
   return <Home />
 }

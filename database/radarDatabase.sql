@@ -87,6 +87,3 @@ CREATE TABLE favorito (
 
     PRIMARY KEY (id_user, id_evento)
 );
-
-
-SELECT * FROM usuario;
