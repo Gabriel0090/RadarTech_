@@ -233,6 +233,23 @@
 .radar-card-date { margin: 0; color: #555953; font-size: .75rem; }
 .radar-card-copy .radar-button { width: 100%; margin-top: auto; }
 .radar-card-copy .radar-button:disabled { cursor: default; }
+.radar-card-actions { display: flex; width: 100%; align-items: center; gap: 8px; margin-top: auto; }
+.radar-card-actions .radar-button { width: auto; min-width: 0; flex: 1; }
+.radar-save-button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: #59636b;
+  font-size: 1.4rem;
+  text-decoration: none;
+}
+.radar-save-button[aria-pressed=true] { border-color: #ffd100; background: #fff9d8; color: #a17b00; }
+.radar-save-button:disabled { cursor: wait; opacity: .6; }
 .radar-status { margin: 0 0 12px; color: #555953; font-size: .8rem; }
 
 @media (max-width: 900px) {

@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import './App.css'
 import './Auth.css'
-import { getCurrentUser, loginUser, logoutUser, registerUser } from './services/auth'
+import { loginUser, registerUser } from './services/auth'
 import { EventDetails } from './Events'
 import Home from './Home'
 import OpportunitySuggestion from './OpportunitySuggestion'
+import Profile from './Profile'
 
 function Login() {
   const [email, setEmail] = useState('')
@@ -92,55 +93,13 @@ function Cadastro() {
   )
 }
 
-function PerfilSemLogin() {
-  const [user, setUser] = useState(null)
-  const [message, setMessage] = useState('Carregando perfil...')
-
-  useEffect(() => {
-    let active = true
-    getCurrentUser()
-      .then((data) => { if (active) { setUser(data); setMessage('') } })
-      .catch((error) => {
-        logoutUser()
-        if (active) setMessage(error.message)
-      })
-    return () => { active = false }
-  }, [])
-
-  function handleLogout() {
-    logoutUser()
-    window.location.assign('/login')
-  }
-
-  if (!user) {
-    return (
-      <main className="home perfil-sem-login">
-        <h1>Perfil</h1>
-        <p>{message}</p>
-        <a className="profile-button" href="/login">Login</a>
-        <a href="/">Voltar para a tela inicial</a>
-      </main>
-    )
-  }
-
-  return (
-    <main className="home perfil-sem-login">
-      <h1>Olá, {user.nome}!</h1>
-      <p>{user.email}</p>
-      <p>Perfil: {user.perfil}</p>
-      <button className="profile-button" type="button" onClick={handleLogout}>Sair</button>
-      <a href="/">Voltar para a tela inicial</a>
-    </main>
-  )
-}
-
 export default function App() {
   const path = window.location.pathname
   const eventRoute = path.match(/^\/eventos\/(\d+)\/?$/)
 
   if (eventRoute) return <EventDetails eventId={eventRoute[1]} />
   if (path === '/oportunidades/nova') return <OpportunitySuggestion />
-  if (path === '/perfil') return <PerfilSemLogin />
+  if (path === '/perfil') return <Profile />
   if (path === '/login') return <Login />
   if (path === '/cadastro') return <Cadastro />
 

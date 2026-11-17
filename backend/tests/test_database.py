@@ -9,11 +9,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import selectinload
 
+from app.database import get_db as app_get_db
 from app.db.base import Base
 from app.core.config import get_settings
 from app.db.session import get_session
 from app.main import app
 from app.models import Assunto, Comentario, Curtida, Evento, EventoAssunto, Favorito, Usuario
+from app.security import get_current_user
 
 pytestmark = pytest.mark.integration
 
@@ -182,3 +184,37 @@ async def test_real_connection_refused_returns_503(db_session):
     finally:
         app.dependency_overrides.clear()
         await engine.dispose()
+
+
+async def test_profile_lists_only_own_suggestions_and_updates_supported_fields(db_session):
+    user, _, own_event, _ = await seed(db_session)
+    other_user = Usuario(nome="Outra Pessoa", email="outra@example.com", senha_hash="teste")
+    db_session.add(other_user)
+    await db_session.flush()
+    other_event = Evento(titulo="Sugestão de outra pessoa", sugerido_por=other_user)
+    db_session.add(other_event)
+    await db_session.flush()
+
+    async def isolated_session():
+        yield db_session
+
+    async def current_user():
+        return user
+
+    app.dependency_overrides[app_get_db] = isolated_session
+    app.dependency_overrides[get_current_user] = current_user
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            suggestions_response = await client.get("/api/v1/me/event-suggestions")
+            profile_response = await client.patch(
+                "/api/v1/auth/me",
+                json={"nome": "Pessoa Atualizada", "cidade": "Recife, PE"},
+            )
+
+        assert suggestions_response.status_code == 200
+        assert [event["id_evento"] for event in suggestions_response.json()] == [own_event.id_evento]
+        assert profile_response.status_code == 200
+        assert profile_response.json()["nome"] == "Pessoa Atualizada"
+        assert profile_response.json()["cidade"] == "Recife, PE"
+    finally:
+        app.dependency_overrides.clear()
