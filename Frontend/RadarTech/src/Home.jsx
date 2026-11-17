@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { request } from './services/api'
+import { getAccessToken } from './services/auth'
 import { useEvents } from './services/events'
 import './Home.css'
 
@@ -52,7 +54,7 @@ function Header() {
         {bars.map((height, index) => <span key={index} style={{ height }} />)}
       </a>
       <div className="radar-actions">
-        <a className="radar-button radar-create" href="/oportunidades/nova">+ Cadastrar<span> oportunidade</span></a>
+        <a className="radar-button radar-create" href="/oportunidades/nova">+ Cadastrar oportunidade</a>
         <a className="radar-profile" href="/perfil" aria-label="Abrir perfil"><Icon name="profile" /></a>
       </div>
     </header>
@@ -108,7 +110,7 @@ function Featured({ events, demo }) {
   )
 }
 
-function OpportunityCard({ event }) {
+function OpportunityCard({ event, isFavorite, isSaving, isLoggedIn, onToggleFavorite }) {
   const date = event.prazo_inscricao || event.data_inicio
   return (
     <article className="radar-card">
@@ -121,7 +123,22 @@ function OpportunityCard({ event }) {
         </div>
         {date && <p className="radar-card-date"><span aria-hidden="true">📅</span> {event.prazo_inscricao ? 'Até ' : ''}<time dateTime={date}>{dateFormat.format(new Date(date))}</time></p>}
         {event.id_evento ? (
-          <a className="radar-button" href={`/eventos/${event.id_evento}`}>Inscrever-se</a>
+          <div className="radar-card-actions">
+            <a className="radar-button" href={`/eventos/${event.id_evento}`}>Ver oportunidade</a>
+            {isLoggedIn ? (
+              <button
+                className="radar-save-button"
+                type="button"
+                aria-label={isFavorite ? 'Remover dos salvos' : 'Salvar oportunidade'}
+                aria-pressed={isFavorite}
+                title={isFavorite ? 'Remover dos salvos' : 'Salvar oportunidade'}
+                disabled={isSaving}
+                onClick={() => onToggleFavorite(event)}
+              >
+                {isFavorite ? '★' : '☆'}
+              </button>
+            ) : <a className="radar-save-button" href="/login" aria-label="Entre para salvar oportunidade" title="Entre para salvar oportunidade">☆</a>}
+          </div>
         ) : <button className="radar-button" type="button" disabled>Inscrever-se</button>}
       </div>
     </article>
@@ -130,6 +147,10 @@ function OpportunityCard({ event }) {
 
 export default function Home() {
   const { data, error } = useEvents('/api/v1/events?limit=100')
+  const token = getAccessToken()
+  const [favoriteIds, setFavoriteIds] = useState(() => new Set())
+  const [pendingFavoriteIds, setPendingFavoriteIds] = useState(() => new Set())
+  const [favoriteError, setFavoriteError] = useState('')
   const [query, setQuery] = useState('')
   const [place, setPlace] = useState('')
   const [now] = useState(Date.now)
@@ -148,6 +169,50 @@ export default function Home() {
     .sort((a, b) => Date.parse(a.prazo_inscricao) - Date.parse(b.prazo_inscricao))
   const showingDeadlines = !showAll && !isFiltered && upcoming.length > 0
   const cards = showingDeadlines ? upcoming.slice(0, 4) : filtered
+
+  useEffect(() => {
+    let active = true
+    if (!token) {
+      return () => { active = false }
+    }
+
+    request('/api/v1/me/favorites', { token })
+      .then((favorites) => {
+        if (active) setFavoriteIds(new Set(favorites.map((event) => event.id_evento)))
+      })
+      .catch((failure) => {
+        if (active) setFavoriteError(failure.message)
+      })
+
+    return () => { active = false }
+  }, [token])
+
+  async function toggleFavorite(event) {
+    const eventId = event.id_evento
+    const wasFavorite = favoriteIds.has(eventId)
+    setFavoriteError('')
+    setPendingFavoriteIds((current) => new Set(current).add(eventId))
+    try {
+      await request(`/api/v1/events/${eventId}/favorites`, {
+        method: wasFavorite ? 'DELETE' : 'POST',
+        token,
+      })
+      setFavoriteIds((current) => {
+        const next = new Set(current)
+        if (wasFavorite) next.delete(eventId)
+        else next.add(eventId)
+        return next
+      })
+    } catch (failure) {
+      setFavoriteError(failure.message)
+    } finally {
+      setPendingFavoriteIds((current) => {
+        const next = new Set(current)
+        next.delete(eventId)
+        return next
+      })
+    }
+  }
 
   function clearFilters() {
     setQuery('')
@@ -197,9 +262,19 @@ export default function Home() {
           </div>
           {!data && !error && <p className="radar-status" role="status">Carregando oportunidades…</p>}
           {demo && <p className="radar-status">{error ? 'Catálogo indisponível. Oportunidades abaixo são exemplos.' : 'Nenhuma oportunidade publicada. Oportunidades abaixo são exemplos.'}</p>}
+          {favoriteError && <p className="radar-status" role="alert">{favoriteError}</p>}
           {(data || error) && !cards.length && <p className="radar-status" role="status">Nenhuma oportunidade encontrada para esses filtros.</p>}
           <div className="radar-card-grid">
-            {cards.map((event) => <OpportunityCard key={event.id_evento ?? event.titulo} event={event} />)}
+            {cards.map((event) => (
+              <OpportunityCard
+                key={event.id_evento ?? event.titulo}
+                event={event}
+                isFavorite={favoriteIds.has(event.id_evento)}
+                isSaving={pendingFavoriteIds.has(event.id_evento)}
+                isLoggedIn={Boolean(token)}
+                onToggleFavorite={toggleFavorite}
+              />
+            ))}
           </div>
         </section>
       </main>

@@ -3,7 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class UsuarioCreate(BaseModel):
@@ -39,7 +39,31 @@ class UsuarioResponse(BaseModel):
     nome: str
     email: str
     perfil: str
+    cidade: str | None = None
     criado_em: datetime
+
+
+class UsuarioUpdate(BaseModel):
+    nome: str | None = Field(default=None, min_length=1, max_length=120)
+    cidade: str | None = Field(default=None, max_length=120)
+
+    @field_validator("nome")
+    @classmethod
+    def validar_nome(cls, value: str | None) -> str | None:
+        if value is not None and not value.strip():
+            raise ValueError("O nome não pode ficar vazio")
+        return value.strip() if value is not None else None
+
+    @field_validator("cidade")
+    @classmethod
+    def normalizar_cidade(cls, value: str | None) -> str | None:
+        return value.strip() or None if value is not None else None
+
+    @model_validator(mode="after")
+    def validar_campos_informados(self) -> "UsuarioUpdate":
+        if not self.model_fields_set:
+            raise ValueError("Informe ao menos um dado para atualizar")
+        return self
 
 
 class EventoCreate(BaseModel):

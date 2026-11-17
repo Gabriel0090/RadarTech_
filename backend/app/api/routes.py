@@ -18,6 +18,7 @@ from app.schemas import (
     TokenResponse,
     UsuarioCreate,
     UsuarioResponse,
+    UsuarioUpdate,
 )
 from app.security import (
     create_access_token,
@@ -108,6 +109,29 @@ async def obter_usuario_atual(
     usuario: Usuario = Depends(get_current_user),
 ):
     return usuario
+
+
+@api_router.patch(
+    "/auth/me",
+    response_model=UsuarioResponse,
+    tags=["autenticação"],
+)
+async def atualizar_usuario_atual(
+    dados: UsuarioUpdate,
+    usuario: Usuario = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    atualizacoes = dados.model_dump(exclude_unset=True)
+    if atualizacoes.get("nome") is None:
+        atualizacoes.pop("nome", None)
+    usuario_atualizado = await session.get(Usuario, usuario.id_user)
+    if usuario_atualizado is None:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    for campo, valor in atualizacoes.items():
+        setattr(usuario_atualizado, campo, valor)
+    await session.commit()
+    await session.refresh(usuario_atualizado)
+    return usuario_atualizado
 
 
 @api_router.get(
@@ -398,6 +422,26 @@ async def listar_favoritos(
             .options(selectinload(Evento.assuntos))
             .where(Favorito.id_user == usuario.id_user)
             .order_by(Favorito.criado_em.desc())
+        )
+    ).all()
+    return [evento_para_resposta(evento) for evento in eventos]
+
+
+@api_router.get(
+    "/me/event-suggestions",
+    response_model=list[EventoResponse],
+    tags=["sugestões"],
+)
+async def listar_sugestoes_do_usuario(
+    usuario: Usuario = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    eventos = (
+        await session.scalars(
+            select(Evento)
+            .options(selectinload(Evento.assuntos))
+            .where(Evento.id_sugerido_por == usuario.id_user)
+            .order_by(Evento.criado_em.desc())
         )
     ).all()
     return [evento_para_resposta(evento) for evento in eventos]
